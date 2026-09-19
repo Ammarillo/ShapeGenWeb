@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#09090b" />
+    <title>ShapeGen — Convex shape generator</title>
+    <meta
+      name="description"
+      content="Turn a black-and-white mask into convex Source engine brushes and export a VMF. Runs entirely in your browser."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9Z" />
+              <path d="M12 12 3 7.5" />
+              <path d="M12 12v9" />
+              <path d="M12 12 21 7.5" />
+            </svg>
+          </div>
+          <div>
+            <h1>ShapeGen</h1>
+            <p>Mask to convex VMF brushes</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="badge">Browser</span>
+          <a class="btn btn-ghost" href="https://github.com/Ammarillo/ShapeGen" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.79 8.2 11.37.6.11.82-.26.82-.58 0-.28-.01-1.03-.02-2.02-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.21.7.82.58C20.56 22.29 24 17.8 24 12.5 24 5.87 18.63.5 12 .5Z"
+              />
+            </svg>
+            Original
+          </a>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <section class="card">
+            <div class="card-head">
+              <h2>Source mask</h2>
+            </div>
+            <div id="dropzone" class="dropzone">
+              <strong>Drop a black &amp; white image</strong>
+              <span class="muted">White pixels become geometry. PNG, JPG, WebP, BMP.</span>
+            </div>
+            <div class="actions" style="margin-top: 0.7rem">
+              <button id="load-btn" class="btn btn-secondary btn-block" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 16V4" />
+                  <path d="m8 8 4-4 4 4" />
+                  <path d="M4 20h16" />
+                </svg>
+                Load mask
+              </button>
+            </div>
+            <div id="file-meta" class="file-meta">
+              <img id="thumb" class="thumb" alt="Mask thumbnail" />
+              <div>
+                <p id="file-name">mask.png</p>
+                <p id="file-size" class="muted">0 × 0</p>
+              </div>
+            </div>
+            <input id="file-input" class="hidden-input" type="file" accept="image/*" />
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>Vectorize</h2>
+            </div>
+            <div class="stack">
+              <label class="field">
+                <span class="field-label">Curve tolerance <span id="tolerance-val" class="value">5.0</span></span>
+                <input id="tolerance" type="range" min="0.1" max="80" step="0.1" value="5" />
+              </label>
+              <div class="switch-row">
+                <label for="invert-mask">Invert mask</label>
+                <input id="invert-mask" class="switch" type="checkbox" />
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>Optimize</h2>
+            </div>
+            <div class="stack">
+              <div class="switch-row">
+                <label for="optimize">Merge convex pieces</label>
+                <input id="optimize" class="switch" type="checkbox" checked />
+              </div>
+              <div class="row">
+                <label class="field">
+                  <span class="field-label">Merge trials</span>
+                  <input id="iterations" type="number" min="1" max="10000" value="32" title="Different merge orders; keeps the fewest convex pieces" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Max angle °</span>
+                  <input id="angle" type="number" min="1" max="179.5" step="0.5" value="179.5" />
+                </label>
+              </div>
+              <div class="switch-row">
+                <label for="colorize">Color pieces</label>
+                <input id="colorize" class="switch" type="checkbox" checked />
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>World (VMF)</h2>
+            </div>
+            <div class="stack">
+              <div class="row row-3">
+                <label class="field">
+                  <span class="field-label">Width</span>
+                  <input id="world-w" type="number" min="1" max="100000" value="1024" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Height</span>
+                  <input id="world-h" type="number" min="1" max="100000" value="1024" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Thickness</span>
+                  <input id="thickness" type="number" min="1" max="1024" value="16" />
+                </label>
+              </div>
+              <div class="switch-row">
+                <label for="snap-grid">Snap to grid</label>
+                <input id="snap-grid" class="switch" type="checkbox" checked />
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="actions">
+              <button id="generate-btn" class="btn btn-primary btn-block" type="button" disabled>
+                Generate shapes
+              </button>
+              <button id="cancel-btn" class="btn btn-outline btn-block" type="button" disabled>Cancel</button>
+              <div class="row">
+                <button id="export-vmf-btn" class="btn btn-secondary" type="button" disabled>Export VMF</button>
+                <button id="export-svg-btn" class="btn btn-outline" type="button" disabled>Export SVG</button>
+              </div>
+            </div>
+            <div id="stats" class="stats" style="margin-top: 0.75rem">Load a mask to begin.</div>
+          </section>
+        </aside>
+
+        <main class="workspace">
+          <canvas id="preview"></canvas>
+          <div id="hud" class="hud"></div>
+          <div id="toolbar" class="toolbar hidden">
+            <button id="zoom-out" class="btn btn-secondary" type="button" title="Zoom out">−</button>
+            <button id="zoom-in" class="btn btn-secondary" type="button" title="Zoom in">+</button>
+            <button id="zoom-fit" class="btn btn-secondary" type="button">Fit</button>
+          </div>
+          <div id="empty" class="empty">
+            <div class="empty-card">
+              <h2>No mask loaded</h2>
+              <p class="muted">
+                Load a silhouette image. ShapeGen traces it, splits it into convex pieces, and exports Source
+                brushes.
+              </p>
+            </div>
+          </div>
+          <div id="progress" class="progress hidden">
+            <span id="progress-text" class="muted">Working…</span>
+            <div class="progress-bar"><span id="progress-bar"></span></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div id="toasts" class="toast-wrap"></div>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
