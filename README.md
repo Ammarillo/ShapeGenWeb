@@ -1,10 +1,10 @@
 # ShapeGen Web
 
-Browser port of [ShapeGen](https://github.com/Ammarillo/ShapeGen). Load a black-and-white mask, vectorize it into convex pieces, and export Source engine VMF brushes. Everything runs locally in the browser — no build step, no server.
+Load a black-and-white mask, vectorize it into convex pieces, and export Source engine VMF brushes. Everything runs locally in the browser — no build step, no server.
 
 ## Use it
 
-1. Open `index.html` from a local static server, or the GitHub Pages URL.
+1. Open [the live app](https://ammarillo.github.io/ShapeGenWeb/), or `index.html` from a local static server.
 2. Load a mask (white = solid).
 3. Generate shapes, then export `.vmf` or `.svg`.
 
@@ -23,7 +23,7 @@ This repo is already a static site.
 1. Push the project to GitHub.
 2. In the repo: **Settings → Pages**.
 3. Set **Source** to **Deploy from a branch**, branch `main`, folder `/ (root)`.
-4. After a minute the app is at `https://<user>.github.io/<repo>/`.
+4. After a minute the app is at https://ammarillo.github.io/ShapeGenWeb/.
 
 ## Settings
 
